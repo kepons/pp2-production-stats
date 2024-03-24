@@ -1,0 +1,14 @@
+riderModule.iml
+/_ReSharper.Caches/
+**/.idea/**
+
+*.suo
+*.user
+.vs/
+[Bb]in/
+[Oo]bj/
+_UpgradeReport_Files/
+[Pp]ackages/
+
+lib/*.dll
+*.ps1
