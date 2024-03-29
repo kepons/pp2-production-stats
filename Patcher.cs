@@ -41,8 +41,6 @@ public static class Patcher
             return;
         }
 
-        Plugin.Log.LogDebug($"Updating production stats for {resource}...");
-
         var producerBuildingCounts = new CountDictionary<string>();
         var consumerBuildingCounts = new CountDictionary<string>();
 
@@ -54,6 +52,7 @@ public static class Patcher
         totalConsumed += GetConsumptionFromEffectEmitters(resource, consumerBuildingCounts);
         totalConsumed += GetConsumptionFromBarracks(resource, consumerBuildingCounts);
         totalConsumed += GetConsumptionFromPopulation(resource, consumerBuildingCounts);
+        totalConsumed += GetConsumptionFromShipyards(resource, consumerBuildingCounts);
 
         var incoming = new StringBuilder();
         incoming.Append("<color=#00FF00>+</color> Max. production: ");
@@ -148,6 +147,42 @@ public static class Patcher
         textObject.transform.localPosition = new Vector3(textPosition.x, textPosition.y, 0.0f);
 
         return textObject.GetComponent<TextMeshProUGUI>();
+    }
+
+    private static Rational GetConsumptionFromShipyards(
+        EnumResource resource,
+        CountDictionary<string> consumers)
+    {
+        var shipyards = Object.FindObjectsOfType<Shipyard>()
+            .Where(s => !s.IsPausedByHand
+                        && s.IsProducing
+                        && Enumerable.Any(
+                            s.GetComponent<InternalStorage>().InputResourceList, r => r.Type == resource));
+
+        var total = Rational.zero;
+
+        // All shipyards of the same tier have the same internal storage items and cap regardless of the ship being
+        // built. Resources from the internal storage are spent every `Cooldown` seconds to progress the ship.
+        // Therefore, the max. consumption rate of ship materials for every resource is `Slot Cap / Cooldown`.
+        foreach (var consumer in shipyards)
+        {
+            if (consumer.ProducedShip == null)
+            {
+                continue;
+            }
+            
+            var cooldown = consumer.Cooldown;
+            
+            foreach (var internalSlot in consumer.GetComponent<InternalStorage>()
+                         .InputResourceList.Where(s => s.Type == resource))
+            {
+                total += new Rational(internalSlot.Cap, cooldown);
+            }
+
+            consumers.Inc(consumer.GameEntityData.DisplayName());
+        }
+
+        return total * 60;
     }
 
     private static Rational GetConsumptionFromBarracks(
