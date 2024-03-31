@@ -213,16 +213,23 @@ public static class Patcher
         var harvesters = Object.FindObjectsOfType<Harvester>()
             .Where(h => !h.IsPausedByHand && h.HarvestedResource == resource);
 
+        var harvestersWithResources = new List<(Harvester harvester, List<ResourceScore> resources)>();
         var reservedResources = new Dictionary<int, bool>();
         var total = Rational.zero;
 
         foreach (var harvester in harvesters)
         {
+            harvestersWithResources.Add((harvester, GetAvailableResources(harvester).OrderBy(r => r.Score).ToList()));
+        }
+
+        foreach (var harvesterWithResources in harvestersWithResources.OrderBy(hr => hr.resources.Count))
+        {
+            var harvester = harvesterWithResources.harvester;
+            var resources = harvesterWithResources.resources;
+            
             producers.Inc(harvester.GameEntityData.DisplayName());
 
-            var availableResources = GetAvailableResources(harvester, reservedResources).OrderBy(r => r.Score).ToList();
-
-            if (!availableResources.Any())
+            if (!resources.Any())
             {
                 continue;
             }
@@ -230,14 +237,22 @@ public static class Patcher
             var assignedResources = 0;
             var harvestCap = harvester.VirtualHarvesterCap;
 
-            while (assignedResources < harvestCap)
+            foreach (var resourceScore in resources)
             {
-                if (availableResources.Count <= assignedResources)
+                if (assignedResources >= harvestCap)
                 {
                     break;
                 }
 
-                reservedResources.Add(availableResources[assignedResources++].Resource.GetInstanceID(), true);
+                var resourceId = resourceScore.Resource.GetInstanceID();
+
+                if (reservedResources.ContainsKey(resourceId))
+                {
+                    continue;
+                }
+
+                reservedResources.Add(resourceId, true);
+                assignedResources++;
             }
 
             var increase = new Rational(
@@ -254,9 +269,7 @@ public static class Patcher
         return total * 60;
     }
 
-    private static List<ResourceScore> GetAvailableResources(
-        Harvester harvester,
-        Dictionary<int, bool> reservedResources)
+    private static List<ResourceScore> GetAvailableResources(Harvester harvester)
     {
         var t = new Traverse(harvester);
 
@@ -274,8 +287,7 @@ public static class Patcher
         {
             var nearbyHarvesters = resourceField.Field.EffectorCount(EnumFieldFlag.UsedByHarvester);
 
-            foreach (var resource in resourceField.ResourceSpots.Where(
-                         r => !reservedResources.ContainsKey(r.GetInstanceID())))
+            foreach (var resource in resourceField.ResourceSpots)
             {
                 resources.Add(new ResourceScore
                 {

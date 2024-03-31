@@ -6,6 +6,10 @@
 
 - Added shipyards that are building ships to the resource consumption display.
 
+### Changed
+
+- Adjusted how harvester (crop farms, lumberjacks and similar) production is calculated to ensure fewer resources are "left behind", making the production rate more accurate.
+
 ## [0.1.0] - 2024-03-27
 
 ### Added
