@@ -384,12 +384,7 @@ public static class Patcher
             var gathererTiles = gatherer.GatherCount(gatherer.Field);
             var gatherAmount = gathererTiles * new Rational(1, gatherer.VirtualGatherCap);
 
-            totalProduced += gatherAmount / cooldown;
-
-            if (gatherer.IsProductionDoubled)
-            {
-                totalProduced *= 2;
-            }
+            totalProduced += gatherAmount * (gatherer.IsProductionDoubled ? 2 : 1) / cooldown;
 
             producers.Inc(gatherer.GameEntityData.DisplayName());
         }
