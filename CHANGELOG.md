@@ -1,6 +1,6 @@
 ﻿# Changelog
 
-## [Unreleased]
+## [0.2.0] - 2024-04-02
 
 ### Added
 
@@ -22,5 +22,5 @@
 
 - Initial release. Show resource and production statistics in the island storage screen.
 
-[Unreleased]: https://github.com/kepons/pp2-production-stats/compare/v0.1.0...HEAD
+[0.2.0]: https://github.com/kepons/pp2-production-stats/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/kepons/pp2-production-stats/releases/tag/v0.1.0
