@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using HarmonyLib;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
+using PP2ProductionStats.Helpers;
 using Object = UnityEngine.Object;
 
-namespace PP2ProductionStats;
+namespace PP2ProductionStats.Patchers;
 
-public static class Patcher
+public static class IslandStoragePatcher
 {
     private static readonly string[] TextParents =
     {
@@ -23,7 +20,7 @@ public static class Patcher
 
     [HarmonyPatch(typeof(ResourceStorageItem), "UpdateHistoryLiveBindings")]
     [HarmonyPostfix]
-    private static void UpdateOutgoingString(ResourceStorageItem __instance, ref LiveBindingNode node)
+    private static void UpdateResourceText(ResourceStorageItem __instance, ref LiveBindingNode node)
     {
         var resource = __instance.Type;
 
@@ -34,7 +31,7 @@ public static class Patcher
 
         _lastUpdate = (DateTime.UtcNow, resource, Singleton<UIManager>.Instance.IsPortrait);
 
-        var label = GetOrCreateLabel();
+        var label = TextParents.GetGameObjectFromPaths()?.GetOrCreateLabel("ResourceFlow");
 
         if (label == null)
         {
@@ -53,26 +50,8 @@ public static class Patcher
         totalConsumed += GetConsumptionFromBarracks(resource, consumerBuildingCounts);
         totalConsumed += GetConsumptionFromPopulation(resource, consumerBuildingCounts);
         totalConsumed += GetConsumptionFromShipyards(resource, consumerBuildingCounts);
-
-        var incoming = new StringBuilder();
-        incoming.Append("<color=#00FF00>+</color> Max. production: ");
-        incoming.AppendLine($"{(decimal)totalProduced.Numerator / totalProduced.Denominator:F2}/min");
-
-        foreach (var c in producerBuildingCounts)
-        {
-            incoming.AppendLine($"{c.Key}: {c.Value}");
-        }
-
-        var outgoing = new StringBuilder();
-        outgoing.Append("<color=#FF0000>-</color> Max. consumption: ");
-        outgoing.AppendLine($"{(decimal)totalConsumed.Numerator / totalConsumed.Denominator:F2}/min");
-
-        foreach (var c in consumerBuildingCounts)
-        {
-            outgoing.AppendLine($"{c.Key}: {c.Value}");
-        }
-
-        label.text = $"{incoming}{outgoing}";
+        
+        label.text = TextHelper.BuildText(totalProduced, totalConsumed, producerBuildingCounts, consumerBuildingCounts);
     }
 
     private static bool ShouldUpdate(EnumResource resource)
@@ -80,73 +59,6 @@ public static class Patcher
         return DateTime.UtcNow - _lastUpdate.time >= TimeSpan.FromSeconds(3)
                || resource != _lastUpdate.resource
                || Singleton<UIManager>.Instance.IsPortrait != _lastUpdate.isPortrait;
-    }
-
-    private static GameObject GetTextParent()
-    {
-        foreach (var path in TextParents)
-        {
-            var parentObject = GameObject.Find(path);
-
-            if (parentObject != null)
-            {
-                return parentObject;
-            }
-        }
-
-        return null;
-    }
-
-    private static TextMeshProUGUI GetOrCreateLabel()
-    {
-        var parentObject = GetTextParent();
-
-        if (parentObject == null)
-        {
-            Plugin.Log.LogWarning($"Could not find GameObject to attach UI to.");
-
-            return null;
-        }
-
-        GameObject textObject;
-        var layoutObject = parentObject.Children().Find(c => c.name == "ResourceFlow");
-
-        if (layoutObject == null)
-        {
-            layoutObject = new GameObject("ResourceFlow");
-            layoutObject.transform.SetParent(parentObject.transform);
-            layoutObject.layer = 5; // The UI layer
-
-            var layoutComponent = layoutObject.AddComponent<VerticalLayoutGroup>();
-            layoutComponent.childControlHeight = true;
-            layoutComponent.childControlWidth = true;
-            layoutComponent.childForceExpandHeight = false;
-            layoutComponent.childForceExpandWidth = true;
-            layoutComponent.childScaleHeight = true;
-            layoutComponent.childScaleWidth = false;
-
-            textObject = new GameObject("Text");
-            textObject.transform.SetParent(layoutObject.transform);
-            textObject.layer = 5;
-
-            var label = textObject.AddComponent<TextMeshProUGUI>();
-            label.overflowMode = TextOverflowModes.Ellipsis;
-        }
-        else
-        {
-            textObject = layoutObject.Children().Find(c => c.name == "Text");
-        }
-
-        layoutObject.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-        textObject.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-
-        var layoutPosition = layoutObject.transform.localPosition;
-        layoutObject.transform.localPosition = new Vector3(layoutPosition.x, layoutPosition.y, 0.0f);
-
-        var textPosition = textObject.transform.localPosition;
-        textObject.transform.localPosition = new Vector3(textPosition.x, textPosition.y, 0.0f);
-
-        return textObject.GetComponent<TextMeshProUGUI>();
     }
 
     private static Rational GetConsumptionFromShipyards(

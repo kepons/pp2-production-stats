@@ -4,6 +4,7 @@
 
 ### Added
 
+- The island's unit consumption and production is now shown in the garrison screen.
 - Added shipyards that are building ships to the resource consumption display.
 
 ### Fixed

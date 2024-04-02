@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using PP2ProductionStats.Patchers;
 using UnityEngine;
 
 namespace PP2ProductionStats
@@ -16,7 +17,8 @@ namespace PP2ProductionStats
             
             Logger.LogInfo($"Loaded plugin {PluginInfo.PLUGIN_GUID} version {PluginInfo.PLUGIN_VERSION}. Paragon Pioneers 2 version {Application.version}.");
             
-            Harmony.CreateAndPatchAll(typeof(Patcher));
+            Harmony.CreateAndPatchAll(typeof(IslandStoragePatcher));
+            Harmony.CreateAndPatchAll(typeof(GarrisonPatcher));
         }
     }
 }
