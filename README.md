@@ -1,20 +1,22 @@
 ﻿# Paragon Pioneers 2 Production Stats
 
-This is a [BepInEx](https://github.com/BepInEx/BepInEx) plugin for [Paragon Pioneers 2](https://paragonpioneers.com/) that aims to show some more detailed item production and consumption statistics.
+This is a [BepInEx](https://github.com/BepInEx/BepInEx) plugin for [Paragon Pioneers 2](https://paragonpioneers.com/) that aims to show some more detailed resource and unit production and consumption statistics.
 
 ## Current features
 
-Currently, the mod adds some text to the island storage screen detailing how much of a given item is produced and consumed on the current island and by what (see image below). Statistics are collected from the following sources:
+- **Resource production/consumption.** Some text is added to the island storage screen detailing how much of a given item can be produced and consumed on the current island and by what (see image below). Statistics are collected from the following sources (Note that resource consumption by palaces is not shown.):
 
-- Resource production buildings (buildings that harvest crops or trees or gather resources from multiple fields also take into account the number of available fields);
-- Unit production buildings;
-- Population need buildings that consume resources;
-- Resource doubling buildings;
-- Population.
-
-Note that resource consumption by shipyards and palaces is not shown.
+  - Resource production buildings (buildings that harvest crops or trees or gather resources from multiple fields also take into account the number of available fields);
+  - Unit production buildings;
+  - Population need buildings that consume resources;
+  - Resource doubling buildings;
+  - Population.
 
 ![Production statistics example](img/production_stats_example.png "Production statistics example")
+
+- **Unit production/consumption.** Some text is added to the island garrison screen showing how much of the selected unit is being produced and consumed. Statistics are collected from the following sources:
+  - Unit production buildings;
+  - Population.
 
 ## Installation
 
