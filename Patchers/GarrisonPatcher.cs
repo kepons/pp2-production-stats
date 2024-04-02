@@ -1,6 +1,7 @@
 ﻿using System;
 using HarmonyLib;
 using PP2ProductionStats.Helpers;
+using PP2ProductionStats.Structs;
 using Object = UnityEngine.Object;
 
 namespace PP2ProductionStats.Patchers;
@@ -13,8 +14,7 @@ public static class GarrisonPatcher
         "2DCanvasPortrait/GameUI/DialogBackground/DialogsContent/GarrisonDialog/Layout/DialogBody/Content/Scroll View/Viewport/Content/Garrison/UnitPanel",
     };
 
-    private static (DateTime time, EnumUnit unit, bool isPortrait) _lastUpdate = (DateTime.UtcNow,
-        EnumUnit.None, false);
+    private static UpdateState _state = new(DateTime.UtcNow, 0, false, false);
 
     [HarmonyPatch(typeof(UnitData), "UpdateLiveBindings")]
     [HarmonyPostfix]
@@ -22,14 +22,18 @@ public static class GarrisonPatcher
     {
         var unit = __instance.Identifier;
 
-        if (!ShouldUpdate(unit) || Singleton<GarrisonManager>.Instance.SelectedUnit != unit)
+        var newState = new UpdateState(
+            DateTime.UtcNow,
+            (int)unit,
+            Singleton<UIManager>.Instance.IsPortrait,
+            Plugin.PerHour);
+
+        if (!newState.IsDirty(_state) || Singleton<GarrisonManager>.Instance.SelectedUnit != unit)
         {
             return;
         }
-        
-        Plugin.Log.LogDebug($"Updating {unit} data...");
 
-        _lastUpdate = (DateTime.UtcNow, unit, Singleton<UIManager>.Instance.IsPortrait);
+        _state = newState;
 
         var label = TextParents.GetGameObjectFromPaths()?.GetOrCreateLabel("UnitFlow");
 
@@ -46,13 +50,6 @@ public static class GarrisonPatcher
         totalProduced += GetProductionFromPopulation(unit, producerBuildingCounts);
         
         label.text = TextHelper.BuildText(totalProduced, totalConsumed, producerBuildingCounts, consumerBuildingCounts);
-    }
-
-    private static bool ShouldUpdate(EnumUnit unit)
-    {
-        return DateTime.UtcNow - _lastUpdate.time >= TimeSpan.FromSeconds(3)
-               || unit != _lastUpdate.unit
-               || Singleton<UIManager>.Instance.IsPortrait != _lastUpdate.isPortrait;
     }
 
     private static Rational GetProductionFromPopulation(

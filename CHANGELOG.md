@@ -5,7 +5,8 @@
 ### Added
 
 - The island's unit consumption and production is now shown in the garrison screen.
-- Added shipyards that are building ships to the resource consumption display.
+- Production and consumption rates can be shown per minute or hour by clicking the text.
+- Shipyards that are building ships are shown in the resource consumption display.
 
 ### Fixed
 

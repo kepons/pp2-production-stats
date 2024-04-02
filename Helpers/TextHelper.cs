@@ -10,9 +10,17 @@ public static class TextHelper
         CountDictionary<string> producers,
         CountDictionary<string> consumers)
     {
+        var timeUnit = Plugin.PerHour ? "h" : "min";
+        
+        if (Plugin.PerHour)
+        {
+            productionRate *= 60;
+            consumptionRate *= 60;
+        }
+        
         var builder = new StringBuilder();
         builder.Append("<color=#00FF00>+</color> Max. production: ");
-        builder.AppendLine($"{(decimal)productionRate.Numerator / productionRate.Denominator:F2}/min");
+        builder.AppendLine($"{(decimal)productionRate.Numerator / productionRate.Denominator:F2}/{timeUnit}");
 
         foreach (var c in producers)
         {
@@ -20,7 +28,7 @@ public static class TextHelper
         }
 
         builder.Append("<color=#FF0000>-</color> Max. consumption: ");
-        builder.AppendLine($"{(decimal)consumptionRate.Numerator / consumptionRate.Denominator:F2}/min");
+        builder.AppendLine($"{(decimal)consumptionRate.Numerator / consumptionRate.Denominator:F2}/{timeUnit}");
 
         foreach (var c in consumers)
         {

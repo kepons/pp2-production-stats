@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using PP2ProductionStats.Components;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -52,6 +53,7 @@ public static class UnityHelper
 
             var label = textObject.AddComponent<TextMeshProUGUI>();
             label.overflowMode = TextOverflowModes.Ellipsis;
+            textObject.AddComponent<ClickableText>();
         }
         else
         {

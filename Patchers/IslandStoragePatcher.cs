@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using PP2ProductionStats.Helpers;
+using PP2ProductionStats.Structs;
 using Object = UnityEngine.Object;
 
 namespace PP2ProductionStats.Patchers;
@@ -15,8 +16,7 @@ public static class IslandStoragePatcher
         "2DCanvasPortrait/GameUI/DialogBackground/DialogsContent/IslandStorageDialog/Layout/DialogBody/Content/PostStaticContent/SelectedGood"
     };
 
-    private static (DateTime time, EnumResource resource, bool isPortrait) _lastUpdate = (DateTime.UtcNow,
-        EnumResource.None, false);
+    private static UpdateState _state = new(DateTime.UtcNow, 0, false, false);
 
     [HarmonyPatch(typeof(ResourceStorageItem), "UpdateHistoryLiveBindings")]
     [HarmonyPostfix]
@@ -24,12 +24,18 @@ public static class IslandStoragePatcher
     {
         var resource = __instance.Type;
 
-        if (!ShouldUpdate(resource))
+        var newState = new UpdateState(
+            DateTime.UtcNow,
+            (int)resource,
+            Singleton<UIManager>.Instance.IsPortrait,
+            Plugin.PerHour);
+
+        if (!newState.IsDirty(_state))
         {
             return;
         }
 
-        _lastUpdate = (DateTime.UtcNow, resource, Singleton<UIManager>.Instance.IsPortrait);
+        _state = newState;
 
         var label = TextParents.GetGameObjectFromPaths()?.GetOrCreateLabel("ResourceFlow");
 
@@ -52,13 +58,6 @@ public static class IslandStoragePatcher
         totalConsumed += GetConsumptionFromShipyards(resource, consumerBuildingCounts);
         
         label.text = TextHelper.BuildText(totalProduced, totalConsumed, producerBuildingCounts, consumerBuildingCounts);
-    }
-
-    private static bool ShouldUpdate(EnumResource resource)
-    {
-        return DateTime.UtcNow - _lastUpdate.time >= TimeSpan.FromSeconds(3)
-               || resource != _lastUpdate.resource
-               || Singleton<UIManager>.Instance.IsPortrait != _lastUpdate.isPortrait;
     }
 
     private static Rational GetConsumptionFromShipyards(

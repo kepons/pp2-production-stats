@@ -9,6 +9,7 @@ namespace PP2ProductionStats
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
+        public static bool PerHour = false;
         internal static ManualLogSource Log;
         
         private void Awake()
