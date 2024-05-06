@@ -30,7 +30,7 @@ This is a [BepInEx](https://github.com/BepInEx/BepInEx) plugin for [Paragon Pion
 
 If you encounter a bug or crash with the plugin installed, please [create an issue](https://github.com/kepons/pp2-production-stats/issues/new) with a screenshot or text of your error.
 
-**Please do not report crashes that contain `PP2ProductionStats` in the error text to the Paragon Pioneers 2 developer because that is a problem with the plugin and not the game itself. File an issue here instead.**
+**Please do not report crashes that contain `PP2ProductionStats` in the error text to the Paragon Pioneers 2 developer because that is a problem with the plugin and not the game itself. File an issue here instead. If you do report an error to the developer, please mention if you are using any mods.**
 
 ## Development
 
