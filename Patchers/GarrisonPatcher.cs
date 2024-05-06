@@ -18,9 +18,21 @@ public static class GarrisonPatcher
 
     [HarmonyPatch(typeof(UnitData), "UpdateLiveBindings")]
     [HarmonyPostfix]
-    private static void UpdateUnitText(UnitData __instance, ref LiveBindingNode node)
+    private static void UpdateUnitTextPatch(UnitData __instance, ref LiveBindingNode node)
     {
-        var unit = __instance.Identifier;
+        try
+        {
+            UpdateUnitText(__instance);
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.LogError(ex);
+        }
+    }
+    
+    private static void UpdateUnitText(UnitData instance)
+    {
+        var unit = instance.Identifier;
 
         var newState = new UpdateState(
             DateTime.UtcNow,

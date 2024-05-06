@@ -20,9 +20,21 @@ public static class IslandStoragePatcher
 
     [HarmonyPatch(typeof(ResourceStorageItem), "UpdateHistoryLiveBindings")]
     [HarmonyPostfix]
-    private static void UpdateResourceText(ResourceStorageItem __instance, ref LiveBindingNode node)
+    private static void UpdateResourceTextPatch(ResourceStorageItem __instance, ref LiveBindingNode node)
     {
-        var resource = __instance.Type;
+        try
+        {
+            UpdateResourceText(__instance);
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.LogError(ex);
+        }
+    }
+    
+    private static void UpdateResourceText(ResourceStorageItem instance)
+    {
+        var resource = instance.Type;
 
         var newState = new UpdateState(
             DateTime.UtcNow,
