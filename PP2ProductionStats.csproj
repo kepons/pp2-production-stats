@@ -5,7 +5,7 @@
     <Description>
       A Paragon Pioneers 2 plugin for showing production and consumption of resources on islands.
     </Description>
-    <VersionPrefix>0.2.1</VersionPrefix>
+    <VersionPrefix>0.2.2</VersionPrefix>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <PackageId>PP2ProductionStats</PackageId>
